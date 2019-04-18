@@ -1,0 +1,113 @@
+---
+- name: Create Azure environment
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Check python prerequisites
+      pip:
+        name:
+          - packaging
+          - msrest
+          - msrestazure
+          - ansible[azure]
+
+    - name: Read environment name
+      set_fact: azure_res_group_name="{{ lookup('env','ENV_NAME') }}"
+
+    - name: Check environment name
+      fail:
+        msg: "The environment name must be set in environment variable ENV_NAME"
+      when: azure_res_group_name == ""
+
+    - name: Read Azure location name
+      set_fact: azure_location="{{ lookup('env','AZURE_LOCATION') }}"
+
+    - name: Check Azure location name
+      fail:
+        msg: "The Azure location name must be set in environment variable AZURE_LOCATION"
+      when: azure_location == ""
+
+    - name: Create resource group
+      azure_rm_resourcegroup:
+        name: "{{ azure_res_group_name }}"
+        location: "{{ azure_location }}"
+
+    - name: Create virtual network
+      azure_rm_virtualnetwork:
+        resource_group: "{{ azure_res_group_name }}"
+        name: "{{ azure_res_group_name }}-vnet"
+        address_prefixes: "10.0.0.0/16"
+
+    - name: Add subnet
+      azure_rm_subnet:
+        resource_group: "{{ azure_res_group_name }}"
+        name: "{{ azure_res_group_name }}-subnet"
+        address_prefix: "10.0.1.0/24"
+        virtual_network: "{{ azure_res_group_name }}-vnet"
+
+    - name: Create public IP addresses (if set)
+      azure_rm_publicipaddress:
+        resource_group: "{{ azure_res_group_name }}"
+        allocation_method: "{{hostvars[item].publiciptype | default('Dynamic')}}"
+        name: "{{ azure_res_group_name }}-{{ item }}-public-ip"
+      when: (hostvars[item].publicip is defined) and (hostvars[item].publicip|bool)
+      with_items:
+        - "{{ groups['all'] | difference('localhost')}}"
+
+    - name: Create Network Security Group that allows SSH
+      azure_rm_securitygroup:
+        resource_group: "{{ azure_res_group_name }}"
+        name: "{{ azure_res_group_name }}-net-security-group"
+        rules:
+          - name: SSH
+            protocol: Tcp
+            destination_port_range: 22
+            access: Allow
+            priority: 1001
+            direction: Inbound
+
+    - name: Create virtual network interface cards
+      azure_rm_networkinterface:
+        resource_group: "{{ azure_res_group_name }}"
+        name: "{{ azure_res_group_name }}-{{ item }}-nic"
+        virtual_network: "{{ azure_res_group_name }}-vnet"
+        subnet: "{{ azure_res_group_name }}-subnet"
+        security_group: "{{ azure_res_group_name }}-net-security-group"
+      when: (hostvars[item].publicip is not defined) or (hostvars[item].publicip is defined and not hostvars[item].publicip|bool)
+      with_items:
+        - "{{ groups['all'] | difference('localhost')}}"
+
+    - name: Create virtual network interface cards (with public IPs)
+      azure_rm_networkinterface:
+        resource_group: "{{ azure_res_group_name }}"
+        name: "{{ azure_res_group_name }}-{{ item }}-nic"
+        virtual_network: "{{ azure_res_group_name }}-vnet"
+        subnet: "{{ azure_res_group_name }}-subnet"
+        public_ip_name: "{{ azure_res_group_name }}-{{ item }}-public-ip"
+        security_group: "{{ azure_res_group_name }}-net-security-group"
+      when: (hostvars[item].publicip is defined) and (hostvars[item].publicip|bool)
+      with_items:
+        - "{{ groups['all'] | difference('localhost')}}"
+
+    - name: Create VMs
+      azure_rm_virtualmachine:
+        resource_group: "{{ azure_res_group_name }}"
+        name: "{{ azure_res_group_name }}-{{ item }}"
+        vm_size: "{{hostvars[item].vmsize | default(azure_def_vm_size) }}"
+        admin_username: "{{user_name}}"
+        ssh_password_enabled: true
+        admin_password: "{{user_password}}"
+        network_interfaces: "{{ azure_res_group_name }}-{{ item }}-nic"
+        managed_disk_type: "{{hostvars[item].hddtype | default(azure_def_hdd_type)}}"
+        os_disk_size_gb: "{{hostvars[item].hddsize | default(azure_def_hdd_size_gb)}}"
+        append_tags: true
+        tags:
+          groups: "{{hostvars[item].group_names | join(',')}}"
+          meta: "{{ hostvars[item] | starts_with_to_str('meta-', true) }}"
+        image:
+          offer: "{{azure_os_image}}"
+          publisher: "{{azure_os_image_publisher}}"
+          sku: "{{azure_os_version}}"
+          version: latest
+      with_items:
+        - "{{ groups['all'] | difference('localhost')}}"

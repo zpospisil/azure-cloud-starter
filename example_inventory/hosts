@@ -1,0 +1,13 @@
+[group1]
+vm01
+
+[group2]
+vm02
+
+# Possible params to customize your vm (with example value)
+# meta-key=value - will be added as vm tag and parsed by dynamic inventory, prefix meta- will be removed
+# vmsize=Standard_B1s - customize your vm size
+# hddtype=Premium_LRS - customize vm hdd type
+# hddsize=30 - customize vm hdd size - minimum is 30
+# publicip=true - set to true whether you want public ip for your machine
+# publiciptype=Static - set public ip type (Dynamic/Static)

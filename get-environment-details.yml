@@ -1,0 +1,45 @@
+---
+- name: Get Azure environment details
+  hosts:
+    - localhost
+  tasks:
+    - name: Check python prerequisites
+      pip:
+        name:
+          - packaging
+          - msrest
+          - msrestazure
+          - ansible[azure]
+
+    - name: Read environment name
+      set_fact: azure_res_group_name="{{ lookup('env','ENV_NAME') }}"
+
+    - name: Check environment name
+      fail:
+        msg: "The environment name must be set in environment variable ENV_NAME"
+      when: azure_res_group_name == ""
+
+    - name: Read information about servers
+      azure_rm_virtualmachine_facts:
+        resource_group: "{{azure_res_group_name}}"
+      register: vm_list
+
+    - name: Display information about servers
+      debug:
+        var: item
+      loop: "{{ vm_list | json_query(vm_query) }}"
+      vars:
+        vm_query: "vms[*].{vmName: name, ifc: network_interface_names}"
+
+    - name: Read information about network interfaces
+      azure_rm_networkinterface_facts:
+        resource_group: "{{azure_res_group_name}}"
+      register: nic_list
+
+    - name: Display information about network interfaces
+      debug:
+        var: item
+      loop: "{{ nic_list | json_query(nic_query) }}"
+      vars:
+        nic_query: "ansible_facts.azure_networkinterfaces[*].{ifc: name, privateIp: properties.ipConfigurations[*].properties.privateIPAddress}"
+        

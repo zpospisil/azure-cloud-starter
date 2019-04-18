@@ -1,0 +1,12 @@
+---
+all:
+  vars:
+    azure_os_image: CentOS
+    azure_os_image_publisher: OpenLogic
+    azure_os_version: 7.5
+    azure_def_vm_size: Standard_B1s
+    azure_def_hdd_size_gb: 30
+    azure_def_hdd_type: Standard_LRS
+    user_name: azureroot
+    user_password: "@Passw0rd1"
+    ansible_python_interpreter: "/usr/bin/env python"

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+export AZURE_SUBSCRIPTION_ID=
+export AZURE_CLIENT_ID=
+export AZURE_SECRET=
+export AZURE_TENANT=
+export AZURE_AD_USER=
+export AZURE_PASSWORD=
+
+export AZURE_LOCATION=
+export ENV_NAME=

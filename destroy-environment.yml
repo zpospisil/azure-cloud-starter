@@ -1,0 +1,26 @@
+---
+- name: Destroy Azure environment
+  hosts:
+    - localhost
+  tasks:
+    - name: Check python prerequisites
+      pip:
+        name:
+          - packaging
+          - msrest
+          - msrestazure
+          - ansible[azure]
+
+    - name: Read environment name
+      set_fact: azure_res_group_name="{{ lookup('env','ENV_NAME') }}"
+
+    - name: Check environment name
+      fail:
+        msg: "The environment name must be set in environment variable ENV_NAME"
+      when: azure_res_group_name == ""
+
+    - name: Destroy environment
+      azure_rm_resourcegroup:
+        name: "{{ azure_res_group_name }}"
+        force: true
+        state: absent
