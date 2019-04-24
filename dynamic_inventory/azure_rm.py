@@ -649,11 +649,6 @@ class AzureInventory(object):
         return parser.parse_args()
 
     def get_inventory(self):
-        env_name = os.environ.get('ENV_NAME')
-        if env_name:
-            self.resource_groups = [env_name]
-        else:
-            sys.exit("Error: you must set environment variable ENV_NAME")
         if len(self.resource_groups) > 0:
             # get VMs for requested resource groups
             for resource_group in self.resource_groups:
