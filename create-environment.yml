@@ -79,9 +79,6 @@
       with_items:
         - "{{ groups['all'] | difference('localhost')}}"
 
-    - pause:
-        minutes: 1
-
     - name: Create virtual network interface cards (with public IPs)
       azure_rm_networkinterface:
         resource_group: "{{ azure_res_group_name }}"
@@ -107,6 +104,9 @@
         admin_username: "{{user_name}}"
         ssh_password_enabled: true
         admin_password: "{{user_password}}"
+        ssh_public_keys:
+         - path: "/home/{{user_name}}/.ssh/authorized_keys"
+           key_data: "{{ssh_public_key}}"
         network_interfaces: "{{ azure_res_group_name }}-{{ item }}-nic"
         managed_disk_type: "{{hostvars[item].hddtype | default(azure_def_hdd_type)}}"
         os_disk_size_gb: "{{hostvars[item].hddsize | default(azure_def_hdd_size_gb)}}"

@@ -10,3 +10,9 @@ all:
     user_name: azureroot
     user_password: "@Passw0rd1"
     ansible_python_interpreter: "/usr/bin/env python"
+    # File with SSH public key. Must be specified only when you are using lookup function for "ssh_public_key" variable
+    ssh_public_key_file: "{{inventory_dir}}/../ssh/id_rsa.pub"
+    # SSH public key which will be copied to the server for login as specified user_name.
+    # You can put here either its content, or you can use lookup function: {{ lookup('file', ssh_public_key_file) }}
+    #
+    ssh_public_key: "{{ lookup('file', ssh_public_key_file) }}"
