@@ -74,8 +74,13 @@
         subnet: "{{ azure_res_group_name }}-subnet"
         security_group: "{{ azure_res_group_name }}-net-security-group"
       when: (hostvars[item].publicip is not defined) or (hostvars[item].publicip is defined and not hostvars[item].publicip|bool)
+      async: 60
+      poll: 0
       with_items:
         - "{{ groups['all'] | difference('localhost')}}"
+
+    - pause:
+        minutes: 1
 
     - name: Create virtual network interface cards (with public IPs)
       azure_rm_networkinterface:
@@ -86,8 +91,13 @@
         public_ip_name: "{{ azure_res_group_name }}-{{ item }}-public-ip"
         security_group: "{{ azure_res_group_name }}-net-security-group"
       when: (hostvars[item].publicip is defined) and (hostvars[item].publicip|bool)
+      async: 60
+      poll: 0
       with_items:
         - "{{ groups['all'] | difference('localhost')}}"
+
+    - pause:
+        minutes: 1
 
     - name: Create VMs
       azure_rm_virtualmachine:
@@ -109,5 +119,10 @@
           publisher: "{{azure_os_image_publisher}}"
           sku: "{{azure_os_version}}"
           version: latest
+      async: 180
+      poll: 0
       with_items:
         - "{{ groups['all'] | difference('localhost')}}"
+
+    - pause:
+        minutes: 3
