@@ -590,8 +590,8 @@ class AzureInventory(object):
 
         self._get_settings()
 
-        if os.environ['ENV_NAME']:
-            self.resource_groups = {os.environ['ENV_NAME']}
+        if os.environ.get('ENV_NAME'):
+            self.resource_groups = [os.environ['ENV_NAME']]
         else:
             sys.exit("The environment name must be set in environment variable ENV_NAME.")
 
