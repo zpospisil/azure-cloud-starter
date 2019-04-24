@@ -590,8 +590,10 @@ class AzureInventory(object):
 
         self._get_settings()
 
-        if self._args.resource_groups:
-            self.resource_groups = self._args.resource_groups.split(',')
+        if os.environ['ENV_NAME']:
+            self.resource_groups = {os.environ['ENV_NAME']}
+        else:
+            sys.exit("The environment name must be set in environment variable ENV_NAME.")
 
         if self._args.tags:
             self.tags = self._args.tags.split(',')
@@ -872,10 +874,12 @@ class AzureInventory(object):
                 if safe_key != 'groups':
                     continue
 
-                safe_value = self._to_safe(value)
-                if not self._inventory.get(safe_value):
-                    self._inventory[safe_value] = []
-                self._inventory[safe_value].append(host_name)
+                values = value.split(',')
+                for index in range(len(values)):
+                    val = values[index]
+                    if not self._inventory.get(val):
+                        self._inventory[val] = []
+                    self._inventory[val].append(host_name)
 
     def _json_format_dict(self, pretty=False):
         # convert inventory to json
