@@ -27,12 +27,12 @@
         user: root
         key: "{{item}}"
       with_items: "{{ssh_public_keys}}"
-      
+
     - name: Add IP address of all hosts to all hosts
       lineinfile:
         dest: /etc/hosts
         regexp: '.*{{ item }}$'
-        line: "{{ hostvars[item].ansible_host }} {{item}}"
+        line: "{{ hostvars[item].ansible_host }} {{item}} {{ hostvars[item].host_alias | default('') }}"
         state: present
       when: hostvars[item].ansible_host is defined
       with_items: "{{ groups.all }}"
