@@ -124,5 +124,14 @@
       with_items:
         - "{{ groups['all'] | difference('localhost')}}"
 
-    - pause:
-        minutes: 3
+    - name: Wait for Servers
+      azure_rm_resource_facts:
+        resource_group: "{{ azure_res_group_name }}"
+        api_version: '2018-06-01'
+        resource_type: "providers/Microsoft.Compute/virtualMachines"
+      register: result
+      until:  result | json_query(test_query) | length == groups['all'] | difference('localhost') | length
+      retries: 30
+      delay: 10
+      vars:
+        test_query: "response[*].value[?properties.provisioningState == 'Succeeded'].properties.provisioningState[]"
