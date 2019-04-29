@@ -37,6 +37,7 @@
         resource_group: "{{ azure_res_group_name }}"
         name: "{{ azure_res_group_name }}-vnet"
         address_prefixes: "10.0.0.0/16"
+      when: vnet_id is not defined or vnet_id == ""
 
     - name: Add subnet
       azure_rm_subnet:
@@ -44,6 +45,7 @@
         name: "{{ azure_res_group_name }}-subnet"
         address_prefix: "10.0.1.0/24"
         virtual_network: "{{ azure_res_group_name }}-vnet"
+      when: vnet_id is not defined or vnet_id == ""
 
     - name: Create public IP addresses (if set)
       azure_rm_publicipaddress:
@@ -70,8 +72,8 @@
       azure_rm_networkinterface:
         resource_group: "{{ azure_res_group_name }}"
         name: "{{ azure_res_group_name }}-{{ item }}-nic"
-        virtual_network: "{{ azure_res_group_name }}-vnet"
-        subnet: "{{ azure_res_group_name }}-subnet"
+        virtual_network: "{{ vnet_id }}"
+        subnet: "{{ subnet_name }}"
         security_group: "{{ azure_res_group_name }}-net-security-group"
       when: (hostvars[item].publicip is not defined) or (hostvars[item].publicip is defined and not hostvars[item].publicip|bool)
       async: 60
@@ -83,8 +85,8 @@
       azure_rm_networkinterface:
         resource_group: "{{ azure_res_group_name }}"
         name: "{{ azure_res_group_name }}-{{ item }}-nic"
-        virtual_network: "{{ azure_res_group_name }}-vnet"
-        subnet: "{{ azure_res_group_name }}-subnet"
+        virtual_network: "{{ vnet_id }}"
+        subnet: "{{ subnet_name }}"
         public_ip_name: "{{ azure_res_group_name }}-{{ item }}-public-ip"
         security_group: "{{ azure_res_group_name }}-net-security-group"
       when: (hostvars[item].publicip is defined) and (hostvars[item].publicip|bool)
@@ -131,7 +133,7 @@
         resource_type: "providers/Microsoft.Compute/virtualMachines"
       register: result
       until:  result | json_query(test_query) | length == groups['all'] | difference('localhost') | length
-      retries: 30
+      retries: 70
       delay: 10
       vars:
         test_query: "response[*].value[?properties.provisioningState == 'Succeeded'].properties.provisioningState[]"

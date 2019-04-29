@@ -16,3 +16,10 @@ all:
     # You can put here either its content, or you can use lookup function: {{ lookup('file', ssh_public_key_file) }}
     #
     ssh_public_key: "{{ lookup('file', ssh_public_key_file) }}"
+
+    # You can either specify already existing vnet id or let it empty. In case that it is empty new VNET will be created.
+    #
+    # vnet id has form : /subscriptions/<subscribtion id>/resourceGroups/<resource group name>/providers/Microsoft.Network/virtualNetworks/<vnet name>"
+    vnet_id:
+
+    subnet_name: "default"
