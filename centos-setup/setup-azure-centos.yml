@@ -1,6 +1,6 @@
 ---
-- name: Create Azure environment
-  hosts: all
+- name: Setup CentOS
+  hosts: azure
   become_user: root
   become: true
   become_method: sudo
