@@ -72,8 +72,8 @@
       azure_rm_networkinterface:
         resource_group: "{{ azure_res_group_name }}"
         name: "{{ azure_res_group_name }}-{{ item }}-nic"
-        virtual_network: "{{ vnet_id }}"
-        subnet: "{{ subnet_name }}"
+        virtual_network: "{{ vnet_id | default(azure_res_group_name+'-vnet')}}"
+        subnet: "{{ subnet_name | default(azure_res_group_name+'-subnet')}}"
         security_group: "{{ azure_res_group_name }}-net-security-group"
       when: (hostvars[item].publicip is not defined) or (hostvars[item].publicip is defined and not hostvars[item].publicip|bool)
       async: 60
@@ -85,8 +85,8 @@
       azure_rm_networkinterface:
         resource_group: "{{ azure_res_group_name }}"
         name: "{{ azure_res_group_name }}-{{ item }}-nic"
-        virtual_network: "{{ vnet_id }}"
-        subnet: "{{ subnet_name }}"
+        virtual_network: "{{ vnet_id | default(azure_res_group_name+'-vnet')}}"
+        subnet: "{{ subnet_name | default(azure_res_group_name+'-subnet')}}"
         public_ip_name: "{{ azure_res_group_name }}-{{ item }}-public-ip"
         security_group: "{{ azure_res_group_name }}-net-security-group"
       when: (hostvars[item].publicip is defined) and (hostvars[item].publicip|bool)
