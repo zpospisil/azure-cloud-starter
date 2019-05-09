@@ -8,3 +8,5 @@ all:
     #  you can add there another records eg. : - "{{lookup('file', '{{inventory_dir}}/../../ssh/jdk.pub')}}"
     ssh_public_keys:
       - "{{lookup('file', ssh_public_key_file)}}"
+    # Password for azureroot user
+    user_password: "@Passw0rd1"

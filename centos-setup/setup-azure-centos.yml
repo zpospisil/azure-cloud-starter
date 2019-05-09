@@ -1,4 +1,13 @@
 ---
+
+- name: Setup ansible_sudo_pass
+  gather_facts: no
+  hosts: azure
+  tasks:
+    - name: Set ansible_sudo_pass
+      set_fact:
+        ansible_sudo_pass: "{{user_password}}"
+
 - name: Setup CentOS
   hosts: azure
   become_user: root
