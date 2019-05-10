@@ -1,7 +1,7 @@
 ---
 - name: Destroy Azure environment
-  hosts:
-    - localhost
+  hosts: localhost
+  connection: local
   tasks:
     - name: Check python prerequisites
       pip:
