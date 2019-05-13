@@ -42,4 +42,15 @@
       loop: "{{ nic_list | json_query(nic_query) }}"
       vars:
         nic_query: "ansible_facts.azure_networkinterfaces[*].{ifc: name, privateIp: properties.ipConfigurations[*].properties.privateIPAddress}"
-        
+
+    - name: Read information about public IPs
+      azure_rm_publicipaddress_facts:
+        resource_group: "{{azure_res_group_name}}"
+      register: pip_list
+
+    - name: Display information about public IPs
+      debug:
+        var: item
+      loop: "{{ pip_list | json_query(nic_query) }}"
+      vars:
+        nic_query: "ansible_facts.azure_publicipaddresses[*].{name: name, publicIP: properties.ipAddress}"
