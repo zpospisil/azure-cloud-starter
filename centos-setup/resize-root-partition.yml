@@ -1,0 +1,41 @@
+---
+
+- name: Setup ansible_sudo_pass
+  gather_facts: no
+  hosts: azure
+  tasks:
+    - name: Set ansible_sudo_pass
+      set_fact:
+        ansible_sudo_pass: "{{user_password}}"
+
+- hosts: azure
+  become_user: root
+  become: true
+  become_method: sudo
+  vars:
+    dev: /dev/sda
+    part: 2
+    max_gap_kb: 1024
+  tasks:
+    - name: install required packages
+      yum: name={{ item }}
+      with_items:
+        - parted
+        - e2fsprogs
+        - cloud-utils-growpart
+    - name: partition info
+      parted:
+        device: "{{dev}}"
+        number: "{{part}}"
+      register: partinfo
+    - set_fact:
+        gap_kb: "{{partinfo.disk.size - partinfo.partitions[vars.part-1].end}}"
+    - debug: 'msg="Gap after partition {{part}}: {{gap_kb}}kiB"'
+    - name: grow too small partition to maximum
+      command: 'growpart {{ dev }} {{ part }}'
+      when: max_gap_kb < gap_kb|int
+    - name: grow filesystem until maximum block size
+      filesystem:
+        fstype: xfs
+        dev: "{{dev}}{{part}}"
+        resizefs: yes
