@@ -2,11 +2,6 @@
 all:
   vars:
     ansible_python_interpreter: "/usr/bin/env python"
-    # File with SSH public key. Must be specified only when you are using lookup function for "ssh_public_key" variable
-    ssh_public_key_file: "{{inventory_dir}}/../ssh/id_rsa.pub"
-    #  SSH public keys which will be copied to the server for login as root.
-    #  you can add there another records eg. : - "{{lookup('file', '{{inventory_dir}}/../../ssh/jdk.pub')}}"
-    ssh_public_keys:
-      - "{{lookup('file', ssh_public_key_file)}}"
+    ssh_public_keys_dir: "{{inventory_dir}}/../../../ssh"
     # Password for azureroot user
     user_password: "@Passw0rd1"

@@ -34,8 +34,9 @@
     - name: Copy SSH keys to root
       authorized_key:
         user: root
-        key: "{{item}}"
-      with_items: "{{ssh_public_keys}}"
+        key: "{{lookup('file', item)}}"
+      with_fileglob:
+        - "{{ssh_public_keys_dir}}/*.pub"
 
     - name: Add IP address of all hosts to all hosts
       lineinfile:
