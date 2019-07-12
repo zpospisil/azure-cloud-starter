@@ -11,8 +11,18 @@
           - msrestazure
           - ansible[azure]
 
+    - name: Set async_poll parameter
+      set_fact: async_poll=5
+      when: sync | default(false)
+
+    - name: Use defined resource group
+      set_fact: azure_res_group_name="{{resource_group}}"
+      when: resource_group is defined and resource_group != ""
+
     - name: Read environment name
       set_fact: azure_res_group_name="{{ lookup('env','ENV_NAME') }}"
+      when: azure_res_group_name is not defined
+
 
     - name: Check environment name
       fail:
@@ -31,6 +41,7 @@
       azure_rm_resourcegroup:
         name: "{{ azure_res_group_name }}"
         location: "{{ azure_location }}"
+      when: resource_group is not defined
 
     - name: Create virtual network
       azure_rm_virtualnetwork:
@@ -76,8 +87,8 @@
         subnet: "{{ subnet_name | default(azure_res_group_name+'-subnet')}}"
         security_group: "{{ azure_res_group_name }}-net-security-group"
       when: (hostvars[item].publicip is not defined) or (hostvars[item].publicip is defined and not hostvars[item].publicip|bool)
-      async: 60
-      poll: 0
+      async: 120
+      poll: "{{async_poll | default(0)}}"
       with_items:
         - "{{ groups['all'] | difference('localhost')}}"
 
@@ -90,18 +101,19 @@
         public_ip_name: "{{ azure_res_group_name }}-{{ item }}-public-ip"
         security_group: "{{ azure_res_group_name }}-net-security-group"
       when: (hostvars[item].publicip is defined) and (hostvars[item].publicip|bool)
-      async: 60
-      poll: 0
+      async: 120
+      poll: "{{async_poll | default(0)}}"
       with_items:
         - "{{ groups['all'] | difference('localhost')}}"
 
     - pause:
         minutes: 1
+      when: async_poll is not defined
 
     - name: Create VMs
       azure_rm_virtualmachine:
         resource_group: "{{ azure_res_group_name }}"
-        name: "{{ azure_res_group_name }}-{{ item }}"
+        name: "{{hostvars[item].vmname | default( azure_res_group_name + '-' + item) }}"
         vm_size: "{{hostvars[item].vmsize | default(azure_def_vm_size) }}"
         admin_username: "{{user_name}}"
         ssh_password_enabled: true
@@ -121,8 +133,8 @@
           publisher: "{{azure_os_image_publisher}}"
           sku: "{{azure_os_version}}"
           version: latest
-      async: 180
-      poll: 0
+      async: 300
+      poll: "{{async_poll | default(0)}}"
       with_items:
         - "{{ groups['all'] | difference('localhost')}}"
 

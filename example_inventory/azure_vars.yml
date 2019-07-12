@@ -5,8 +5,10 @@ all:
     azure_os_image_publisher: OpenLogic
     azure_os_version: 7.5
     azure_def_vm_size: Standard_B1s
+    # default OS hdd size
     azure_def_hdd_size_gb: 30
-    azure_def_hdd_type: Standard_LRS
+    # default OS hdd type (Standard_LRS, StandardSSD_LRS, Premium_LRS)
+    azure_def_hdd_type: StandardSSD_LRS
     user_name: azureroot
     user_password: "@Passw0rd1"
     ansible_python_interpreter: "/usr/bin/env python"
@@ -21,5 +23,7 @@ all:
     #
     # vnet id has form : /subscriptions/<subscribtion id>/resourceGroups/<resource group name>/providers/Microsoft.Network/virtualNetworks/<vnet name>"
     vnet_id:
-
     subnet_name: "default"
+
+    # Specify if resources should be created synchronously or not
+    sync: no
