@@ -7,6 +7,9 @@
     - name: Set ansible_sudo_pass
       set_fact:
         ansible_sudo_pass: "{{user_password}}"
+    - name: Set ansible_become_password
+      set_fact:
+        ansible_become_password: "{{user_password}}"
 
 - hosts: azure
   become_user: root

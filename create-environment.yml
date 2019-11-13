@@ -128,6 +128,7 @@
         tags:
           groups: "{{hostvars[item].group_names | join(',')}}"
           meta: "{{ hostvars[item] | starts_with_to_str('meta-', true) }}"
+          environment: "{{azure_res_group_name}}"
         image:
           offer: "{{azure_os_image}}"
           publisher: "{{azure_os_image_publisher}}"
@@ -148,4 +149,4 @@
       retries: 70
       delay: 10
       vars:
-        test_query: "response[*].value[?properties.provisioningState == 'Succeeded'].properties.provisioningState[]"
+        test_query: "response[?properties.provisioningState == 'Succeeded' && tags.environment == '{{azure_res_group_name}}'].properties.provisioningState[]"
