@@ -16,8 +16,6 @@
   become: true
   become_method: sudo
   vars:
-    dev: /dev/sda
-    part: 2
     max_gap_kb: 1024
   tasks:
     - name: install required packages
@@ -26,13 +24,24 @@
         - parted
         - e2fsprogs
         - cloud-utils-growpart
+    - name: find PV
+      command: 'pvdisplay -C --reportformat json'
+      register: pvlist
+      failed_when: "pvlist.rc != 1 and pvlist.rc != 0"
+    - name: set full dev
+      set_fact:
+        devFull: "{{ (pvlist.stdout | from_json)['report'][0]['pv'][0]['pv_name'] }}"
+    - name: set dav attributes
+      set_fact:
+        dev: "{{ devFull | regex_replace('[0-9]', '')}}"
+        part: "{{ devFull | regex_replace('[^0-9]', '')}}"
     - name: partition info
       parted:
         device: "{{dev}}"
         number: "{{part}}"
       register: partinfo
     - set_fact:
-        gap_kb: "{{partinfo.disk.size - partinfo.partitions[vars.part-1].end}}"
+        gap_kb: "{{partinfo.disk.size - partinfo.partitions[(vars.part | int)-1].end}}"
     - debug: 'msg="Gap after partition {{part}}: {{gap_kb}}kiB"'
     - name: grow too small partition to maximum
       command: 'growpart {{ dev }} {{ part }}'
