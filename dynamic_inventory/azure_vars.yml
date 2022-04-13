@@ -1,7 +1,7 @@
 ---
 all:
   vars:
-    ansible_python_interpreter: "/usr/bin/env python"
-    ssh_public_keys_dir: "{{inventory_dir}}/../../../ssh"
+    ansible_python_interpreter: "/usr/bin/env python3"
+    ssh_public_keys_dir: "{{inventory_dir}}/ssh"
     # Password for azureroot user
     user_password: "@Passw0rd1"

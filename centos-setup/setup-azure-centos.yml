@@ -18,12 +18,11 @@
   become_method: sudo
   tasks:
     - name: Install libselinux as prerequisite for SELinux Ansible module
-      yum:
+      dnf:
         name: "{{item}}"
         state: latest
       with_items:
-        - libselinux-python
-        - libsemanage-python
+        - libselinux-python3
 
     - name: Disable SELinux at next reboot
       selinux:

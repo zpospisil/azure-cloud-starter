@@ -4,3 +4,4 @@
 venv
 *.iml
 .idea
+/test_inventory/

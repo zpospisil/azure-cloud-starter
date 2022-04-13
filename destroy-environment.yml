@@ -2,6 +2,7 @@
 - name: Destroy Azure environment
   hosts: localhost
   connection: local
+  gather_facts: no
   tasks:
     - name: Check python prerequisites
       pip:
@@ -24,3 +25,4 @@
         name: "{{ azure_res_group_name }}"
         force: true
         state: absent
+

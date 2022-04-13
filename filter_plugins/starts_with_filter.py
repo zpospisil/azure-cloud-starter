@@ -12,7 +12,7 @@ import ansible.vars.manager
 def _string_sanity_check(string):
     if string is None:
         return ''
-    if not isinstance(string, basestring):
+    if not isinstance(string, str):
         return str(string)
     return string
 

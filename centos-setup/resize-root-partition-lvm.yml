@@ -38,13 +38,10 @@
       command: 'growpart {{ dev }} {{ part }}'
       when: max_gap_kb < gap_kb|int
       register: growpartres
-      failed_when: "growpartres.rc|int != O"
-    - name: grow filesystem until maximum block size
-      filesystem:
-        fstype: xfs
-        dev: "{{dev}}{{part}}"
-        resizefs: yes
-
-
-
-
+      failed_when: "growpartres.rc != 1 and growpartres.rc != 0"
+    - name: grow pv
+      shell: pvresize "{{dev}}{{part}}"
+    - name: grow lv
+      shell: lvextend  /dev/rootvg/rootlv "{{dev}}{{part}}" -r
+      register: growlvres
+      failed_when: "growlvres.rc != 5 and growlvres.rc != 0"

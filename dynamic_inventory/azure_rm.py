@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2016 Matt Davis, <mdavis@ansible.com>
 #                    Chris Houseknecht, <house@redhat.com>
@@ -897,7 +897,7 @@ class AzureInventory(object):
                 if key in ('resource_groups', 'tags', 'locations') and file_settings.get(key):
                     values = file_settings.get(key).split(',')
                     if len(values) > 0:
-                        setattr(self, key, values)                                                                                                                      
+                        setattr(self, key, values)
                 elif file_settings.get(key):
                     val = self._to_boolean(file_settings[key])
                     setattr(self, key, val)
